@@ -2,7 +2,7 @@ package com.example.thegreatdalmuti.service
 
 import com.example.thegreatdalmuti.domain.Card
 import com.example.thegreatdalmuti.domain.GameRoom
-import com.example.thegreatdalmuti.domain.PlayerDomain
+import com.example.thegreatdalmuti.domain.Player
 import com.example.thegreatdalmuti.type.GameResult
 import com.example.thegreatdalmuti.type.GameState
 import org.springframework.stereotype.Service
@@ -19,7 +19,7 @@ class GameService(
     /**
      * 새 게임 룸 생성
      */
-    fun createRoom(roomName: String, creator: PlayerDomain): GameRoom {
+    fun createRoom(roomName: String, creator: Player): GameRoom {
         val room = GameRoom(
             id = nextRoomId++,
             name = roomName
@@ -46,7 +46,7 @@ class GameService(
     /**
      * 플레이어가 방에 입장
      */
-    fun joinRoom(roomId: Long, player: PlayerDomain): GameRoom {
+    fun joinRoom(roomId: Long, player: Player): GameRoom {
         val room = findRoom(roomId)
         room.addPlayer(player)
         return room
@@ -55,7 +55,7 @@ class GameService(
     /**
      * 플레이어가 방에서 퇴장
      */
-    fun leaveRoom(roomId: Long, player: PlayerDomain): GameRoom {
+    fun leaveRoom(roomId: Long, player: Player): GameRoom {
         val room = findRoom(roomId)
         room.removePlayer(player)
         return room
@@ -85,7 +85,7 @@ class GameService(
      * 첫 번째 플레이어 결정
      * 1번 카드(DALMUTI)를 가진 플레이어가 먼저 시작
      */
-    private fun determineFirstPlayer(players: List<PlayerDomain>): PlayerDomain {
+    private fun determineFirstPlayer(players: List<Player>): Player {
         return players.find { player ->
             player.cards.any { it.rank.rankNumber == 1 }
         } ?: players.first() // 1번 카드가 없으면 첫 번째 플레이어
@@ -131,7 +131,7 @@ class GameService(
     /**
      * 플레이어가 모든 카드를 다 냈을 때 처리
      */
-    private fun handlePlayerFinished(room: GameRoom, player: PlayerDomain): GameResult {
+    private fun handlePlayerFinished(room: GameRoom, player: Player): GameResult {
         room.finishedPlayers.add(player)
 
         // 게임 종료 확인 (마지막 한 명 남을 때까지)
@@ -148,7 +148,7 @@ class GameService(
     /**
      * 다음 플레이어 가져오기
      */
-    private fun getNextPlayer(room: GameRoom, currentPlayer: PlayerDomain): PlayerDomain {
+    private fun getNextPlayer(room: GameRoom, currentPlayer: Player): Player {
         val currentIndex = room.players.indexOf(currentPlayer)
         val nextIndex = (currentIndex + 1) % room.players.size
         return room.players[nextIndex]
@@ -157,7 +157,7 @@ class GameService(
     /**
      * 다음 활성 플레이어 가져오기 (게임이 끝나지 않은 플레이어)
      */
-    private fun getNextActivePlayer(room: GameRoom, currentPlayer: PlayerDomain): PlayerDomain? {
+    private fun getNextActivePlayer(room: GameRoom, currentPlayer: Player): Player? {
         val activePlayers = room.players.filter { it !in room.finishedPlayers }
         if (activePlayers.size <= 1) return null
 

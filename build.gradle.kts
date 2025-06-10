@@ -26,17 +26,20 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    //implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     compileOnly("org.projectlombok:lombok")
-    runtimeOnly("com.mysql:mysql-connector-j")
+    //runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+
+    //웹소켓
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     implementation("io.github.openfeign.querydsl:querydsl-jpa:6.11")
     annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:6.11:jakarta")

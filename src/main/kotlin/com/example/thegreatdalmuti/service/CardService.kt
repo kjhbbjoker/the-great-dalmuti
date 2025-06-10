@@ -1,7 +1,7 @@
 package com.example.thegreatdalmuti.service
 
 import com.example.thegreatdalmuti.domain.Card
-import com.example.thegreatdalmuti.domain.PlayerDomain
+import com.example.thegreatdalmuti.domain.Player
 import com.example.thegreatdalmuti.type.RankType
 import org.springframework.stereotype.Service
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class CardService {
 
     /**
-     * 대달무티 게임 덱 생성
+     * 달무티 게임 덱 생성
      * - 1번 카드 1장, 2번 카드 2장, ..., 12번 카드 12장
      * - 조커 2장 추가 (향후 구현)
      */
@@ -43,7 +43,7 @@ class CardService {
      * 플레이어들에게 카드 배분
      * 모든 카드를 균등하게 배분
      */
-    fun distributeCards(players: List<PlayerDomain>, deck: MutableList<Card>) {
+    fun distributeCards(players: List<Player>, deck: MutableList<Card>) {
 
         require(players.isNotEmpty()) {
             "플레이어가 없습니다."
@@ -110,7 +110,7 @@ class CardService {
     /**
      * 플레이어가 특정 카드들을 가지고 있는지 확인
      */
-    fun playerHasCards(player: PlayerDomain, cards: List<Card>): Boolean {
+    fun playerHasCards(player: Player, cards: List<Card>): Boolean {
         return cards.all { cardToCheck ->
             player.cards.count { it.rank == cardToCheck.rank } >=
                     cards.count { it.rank == cardToCheck.rank }
@@ -120,7 +120,7 @@ class CardService {
     /**
      * 플레이어 손에서 카드 제거
      */
-    fun removeCardsFromPlayer(player: PlayerDomain, cards: List<Card>) {
+    fun removeCardsFromPlayer(player: Player, cards: List<Card>) {
         cards.forEach { cardToRemove ->
             val cardInHand = player.cards.find { it.rank == cardToRemove.rank }
             if (cardInHand != null) {
