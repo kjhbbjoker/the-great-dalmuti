@@ -7,10 +7,13 @@ import jakarta.persistence.*
 @Entity
 class Player : BaseEntity() {
 
+    val userId: String = "";
+
     var username: String = "";
 
+    var password: String = "";
+
+    var email: String = "";
+
     var profileImageUrl: String? = null
-
-    var rank: RankType? = RankType.PEON
-
 }

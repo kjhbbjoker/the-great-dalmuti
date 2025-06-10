@@ -20,19 +20,19 @@ class BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
     @SequenceGenerator(name = "sequence", allocationSize = 1)
     @Id
-    protected val id: Long? = null
+    val id: Long? = null
 
     @CreatedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    protected val dateOfCreation: LocalDateTime? = null
+    val dateOfCreation: LocalDateTime? = null
 
     @LastModifiedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    protected var dateOfModification: LocalDateTime? = null
+    var dateOfModification: LocalDateTime? = null
 
-    protected var active = true;
+    var active = true;
 
-    protected val entityType: String? = this.javaClass.simpleName
+    val entityType: String? = this.javaClass.simpleName
 }

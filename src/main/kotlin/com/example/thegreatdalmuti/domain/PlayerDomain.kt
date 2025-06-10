@@ -1,8 +1,10 @@
 package com.example.thegreatdalmuti.domain
 
+import com.example.thegreatdalmuti.entity.Player
+
 data class PlayerDomain(
 
-    val id: Long,
+    val id: Long?,
 
     var username: String,
 
@@ -12,6 +14,11 @@ data class PlayerDomain(
 ) {
 
 
-
+    constructor(player: Player) : this(
+        id = player.id,
+        username =player.username,
+        profileImageUrl = player.profileImageUrl,
+        cards= mutableListOf()
+    )
 
 }
