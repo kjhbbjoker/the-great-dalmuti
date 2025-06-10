@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: db-develop
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: rlawhdgns4!
+    url: jdbc:mysql://localhost:3306/the_great_dalmuti_server?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true&failOverReadOnly=false&maxReconnects=10&allowPublicKeyRetrieval=true
+
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
