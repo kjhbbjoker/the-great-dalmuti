@@ -1,0 +1,26 @@
+springdoc:
+  swagger-ui:
+    operationsSorter: method
+    doc-expansion: none
+    path: /api-docs/mes
+    groups-order: DESC
+    display-request-duration: true
+  api-docs:
+    enabled: true
+
+spring:
+  profiles:
+    group:
+      develop:
+        - db-develop
+      deploy:
+        - db-deploy
+
+
+  application:
+    name: the-great-dalmati
+
+
+server:
+  port: 25002
+
