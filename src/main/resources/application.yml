@@ -22,5 +22,5 @@ spring:
 
 
 server:
-  port: 25002
+  port: 25003
 

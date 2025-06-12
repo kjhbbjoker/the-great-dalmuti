@@ -26,6 +26,7 @@ class GameService(
         )
         room.addPlayer(creator)
         gameRooms[room.id] = room
+        println(gameRooms.size)
         return room
     }
 
@@ -94,7 +95,7 @@ class GameService(
     /**
      * 카드 내기
      */
-    fun playCards(roomId: Long, playerId: Long, cards: List<Card>): GameResult {
+    fun playCards(roomId: Long, playerId: String, cards: List<Card>): GameResult {
         val room = findRoom(roomId)
         require(room.gameState == GameState.PLAYING) { "게임이 진행 중이 아닙니다." }
 
@@ -174,7 +175,7 @@ class GameService(
     /**
      * 패스하기
      */
-    fun passPlayer(roomId: Long, playerId: Long): GameRoom {
+    fun passPlayer(roomId: Long, playerId: String): GameRoom {
         val room = findRoom(roomId)
         require(room.gameState == GameState.PLAYING) { "게임이 진행 중이 아닙니다." }
 

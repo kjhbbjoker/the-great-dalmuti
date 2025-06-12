@@ -20,7 +20,7 @@ data class GameRoom(
      */
     fun addPlayer(player: Player) {
         require(players.size < 7) { "방에 더 이상 플레이어를 추가할 수 없습니다." }
-        require(gameState == GameState.PLAYING) { "게임이 이미 시작되었습니다." }
+        require(gameState == GameState.WAITING) { "게임이 이미 시작되었습니다." }
         players.add(player)
     }
 

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>달무티 게임 - 플레이어 접속 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .player-info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 달무티 게임</h1>
+            <h2>플레이어 접속 테스트</h2>
+        </div>
+
+        <div id="connectionStatus" class="status disconnected">
+            연결 상태: 미연결
+        </div>
+
+        <div class="input-group">
+            <label for="nicknameInput">닉네임:</label>
+            <input type="text" id="nicknameInput" placeholder="닉네임을 입력하세요 (2-20자)" maxlength="20">
+        </div>
+
+        <div>
+            <button id="connectBtn" class="btn">WebSocket 연결</button>
+            <button id="loginBtn" class="btn" disabled>플레이어 접속</button>
+            <button id="disconnectBtn" class="btn" disabled>접속 해제</button>
+            <button id="pingBtn" class="btn" disabled>핑 테스트</button>
+        </div>
+
+        <div id="playerInfo" class="player-info" style="display: none;">
+            <h3>플레이어 정보</h3>
+            <p><strong>플레이어 ID:</strong> <span id="playerId"></span></p>
+            <p><strong>닉네임:</strong> <span id="playerName"></span></p>
+        </div>
+
+        <div>
+            <h3>연결 로그</h3>
+            <div id="messageLog" class="log"></div>
+            <button id="clearLogBtn" class="btn">로그 지우기</button>
+        </div>
+    </div>
+
+    <script>
+        class DalmutiGameClient {
+            constructor() {
+                this.socket = null;
+                this.isConnected = false;
+                this.playerId = null;
+                this.playerName = null;
+
+                this.initElements();
+                this.bindEvents();
+            }
+
+            initElements() {
+                this.statusDiv = document.getElementById('connectionStatus');
+                this.nicknameInput = document.getElementById('nicknameInput');
+                this.connectBtn = document.getElementById('connectBtn');
+                this.loginBtn = document.getElementById('loginBtn');
+                this.disconnectBtn = document.getElementById('disconnectBtn');
+                this.pingBtn = document.getElementById('pingBtn');
+                this.messageLog = document.getElementById('messageLog');
+                this.clearLogBtn = document.getElementById('clearLogBtn');
+                this.playerInfo = document.getElementById('playerInfo');
+                this.playerIdSpan = document.getElementById('playerId');
+                this.playerNameSpan = document.getElementById('playerName');
+            }
+
+            bindEvents() {
+                this.connectBtn.addEventListener('click', () => this.connect());
+                this.loginBtn.addEventListener('click', () => this.login());
+                this.disconnectBtn.addEventListener('click', () => this.disconnect());
+                this.pingBtn.addEventListener('click', () => this.sendPing());
+                this.clearLogBtn.addEventListener('click', () => this.clearLog());
+
+                this.nicknameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && this.loginBtn.disabled === false) {
+                        this.login();
+                    }
+                });
+            }
+
+            connect() {
+                try {
+                    const wsUrl = `ws://localhost:25003/ws/game`;
+                    this.socket = new WebSocket(wsUrl);
+
+                    this.socket.onopen = () => {
+                        this.isConnected = true;
+                        this.updateConnectionStatus(true);
+                        this.updateButtons();
+                        this.log('✅ WebSocket 연결 성공');
+                    };
+
+                    this.socket.onmessage = (event) => {
+                        const message = JSON.parse(event.data);
+                        this.handleMessage(message);
+                    };
+
+                    this.socket.onclose = () => {
+                        this.isConnected = false;
+                        this.updateConnectionStatus(false);
+                        this.updateButtons();
+                        this.log('❌ WebSocket 연결 종료');
+                    };
+
+                    this.socket.onerror = (error) => {
+                        this.log('❌ WebSocket 에러: ' + error);
+                    };
+
+                } catch (error) {
+                    this.log('❌ 연결 실패: ' + error.message);
+                }
+            }
+
+            login() {
+                const nickname = this.nicknameInput.value.trim();
+
+                if (!nickname) {
+                    alert('닉네임을 입력해주세요.');
+                    return;
+                }
+
+                if (nickname.length < 2 || nickname.length > 20) {
+                    alert('닉네임은 2-20자여야 합니다.');
+                    return;
+                }
+
+                const message = {
+                    type: 'PLAYER_CONNECT',
+                    data: {
+                        nickname: nickname
+                    }
+                };
+
+                this.sendMessage(message);
+                this.log(`🚀 플레이어 접속 시도: ${nickname}`);
+            }
+
+            disconnect() {
+                if (this.playerId) {
+                    const message = {
+                        type: 'PLAYER_DISCONNECT',
+                        data: {}
+                    };
+                    this.sendMessage(message);
+                }
+
+                if (this.socket) {
+                    this.socket.close();
+                }
+            }
+
+            sendPing() {
+                const message = {
+                    type: 'PING',
+                    data: {}
+                };
+                this.sendMessage(message);
+                this.log('🏓 핑 전송');
+            }
+
+            sendMessage(message) {
+                if (this.socket && this.isConnected) {
+                    this.socket.send(JSON.stringify(message));
+                    this.log(`📤 메시지 전송: ${message.type}`);
+                } else {
+                    this.log('❌ WebSocket이 연결되지 않았습니다.');
+                }
+            }
+
+            handleMessage(message) {
+                this.log(`📥 메시지 수신: ${JSON.stringify(message, null, 2)}`);
+
+                switch (message.type) {
+                    case 'CONNECTION_ESTABLISHED':
+                        this.log('🔗 연결 확립됨');
+                        break;
+
+                    case 'PLAYER_CONNECTED':
+                        this.playerId = message.data.playerId;
+                        this.playerName = message.data.username;
+                        this.updatePlayerInfo();
+                        this.log(`👤 플레이어 접속 완료: ${this.playerName} (ID: ${this.playerId})`);
+                        break;
+
+                    case 'PLAYER_DISCONNECTED':
+                        this.playerId = null;
+                        this.playerName = null;
+                        this.updatePlayerInfo();
+                        this.log('👋 플레이어 접속 해제 완료');
+                        break;
+
+                    case 'PLAYER_JOINED':
+                        this.log(`👥 새 플레이어 접속: ${message.data.username}`);
+                        break;
+
+                    case 'PLAYER_LEFT':
+                        this.log(`👥 플레이어 퇴장: ${message.data.playerId}`);
+                        break;
+
+                    case 'PONG':
+                        this.log('🏓 퐁 수신 - 연결 상태 양호');
+                        break;
+
+                    case 'ERROR':
+                        this.log(`❌ 에러: ${message.data.message}`);
+                        break;
+
+                    default:
+                        this.log(`❓ 알 수 없는 메시지 타입: ${message.type}`);
+                }
+            }
+
+            updateConnectionStatus(connected) {
+                if (connected) {
+                    this.statusDiv.className = 'status connected';
+                    this.statusDiv.textContent = '연결 상태: 연결됨';
+                } else {
+                    this.statusDiv.className = 'status disconnected';
+                    this.statusDiv.textContent = '연결 상태: 미연결';
+                }
+            }
+
+            updateButtons() {
+                this.connectBtn.disabled = this.isConnected;
+                this.loginBtn.disabled = !this.isConnected || this.playerId !== null;
+                this.disconnectBtn.disabled = !this.isConnected;
+                this.pingBtn.disabled = !this.isConnected;
+            }
+
+            updatePlayerInfo() {
+                if (this.playerId) {
+                    this.playerInfo.style.display = 'block';
+                    this.playerIdSpan.textContent = this.playerId;
+                    this.playerNameSpan.textContent = this.playerName;
+                } else {
+                    this.playerInfo.style.display = 'none';
+                }
+                this.updateButtons();
+            }
+
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${message}`;
+                this.messageLog.innerHTML += logEntry + '\n';
+                this.messageLog.scrollTop = this.messageLog.scrollHeight;
+                console.log(logEntry);
+            }
+
+            clearLog() {
+                this.messageLog.innerHTML = '';
+            }
+        }
+
+        // 페이지 로드 시 클라이언트 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new DalmutiGameClient();
+        });
+    </script>
+</body>
+</html>

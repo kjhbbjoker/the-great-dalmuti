@@ -4,7 +4,7 @@ package com.example.thegreatdalmuti.domain
 
 data class Player(
 
-    val id: Long?,
+    val id: String?,
 
     var gameRoom: GameRoom? = null,
 
